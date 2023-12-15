@@ -1,4 +1,4 @@
-module golang.org/x/crypto
+module github.com/juanjiTech/cryptox
 
 go 1.18
 

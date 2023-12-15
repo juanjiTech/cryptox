@@ -26,9 +26,9 @@ import (
 	"strconv"
 	"strings"
 
-	"golang.org/x/crypto/openpgp/armor"
-	"golang.org/x/crypto/openpgp/errors"
-	"golang.org/x/crypto/openpgp/packet"
+	"github.com/juanjiTech/cryptox/openpgp/armor"
+	"github.com/juanjiTech/cryptox/openpgp/errors"
+	"github.com/juanjiTech/cryptox/openpgp/packet"
 )
 
 // A Block represents a clearsigned message. A signature on a Block can

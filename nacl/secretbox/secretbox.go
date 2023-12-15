@@ -35,9 +35,9 @@ This package is interoperable with NaCl: https://nacl.cr.yp.to/secretbox.html.
 package secretbox // import "golang.org/x/crypto/nacl/secretbox"
 
 import (
-	"golang.org/x/crypto/internal/alias"
-	"golang.org/x/crypto/internal/poly1305"
-	"golang.org/x/crypto/salsa20/salsa"
+	"github.com/juanjiTech/cryptox/internal/alias"
+	"github.com/juanjiTech/cryptox/internal/poly1305"
+	"github.com/juanjiTech/cryptox/salsa20/salsa"
 )
 
 // Overhead is the number of bytes of overhead when boxing a message.
