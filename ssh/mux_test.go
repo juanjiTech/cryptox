@@ -174,7 +174,7 @@ func TestMuxChannelOverflow(t *testing.T) {
 	marshalUint32(packet[5:], uint32(1))
 	packet[9] = 42
 
-	if err := writer.mux.conn.writePacket(packet); err != nil {
+	if err := writer.mux.conn.WritePacket(packet); err != nil {
 		t.Errorf("could not send packet")
 	}
 	if _, err := reader.SendRequest("hello", true, nil); err == nil {
@@ -360,7 +360,7 @@ func TestMuxUnknownChannelRequests(t *testing.T) {
 	kDone := make(chan error, 1)
 	go func() {
 		// Ignore unknown channel messages that don't want a reply.
-		err := serverPipe.writePacket(Marshal(channelRequestMsg{
+		err := serverPipe.WritePacket(Marshal(channelRequestMsg{
 			PeersID:             1,
 			Request:             "keepalive@openssh.com",
 			WantReply:           false,
@@ -373,7 +373,7 @@ func TestMuxUnknownChannelRequests(t *testing.T) {
 
 		// Send a keepalive, which should get a channel failure message
 		// in response.
-		err = serverPipe.writePacket(Marshal(channelRequestMsg{
+		err = serverPipe.WritePacket(Marshal(channelRequestMsg{
 			PeersID:             2,
 			Request:             "keepalive@openssh.com",
 			WantReply:           true,
@@ -384,7 +384,7 @@ func TestMuxUnknownChannelRequests(t *testing.T) {
 			return
 		}
 
-		packet, err := serverPipe.readPacket()
+		packet, err := serverPipe.ReadPacket()
 		if err != nil {
 			kDone <- fmt.Errorf("read packet: %w", err)
 			return
@@ -411,7 +411,7 @@ func TestMuxUnknownChannelRequests(t *testing.T) {
 
 		// Receive and respond to the keepalive to confirm the mux is
 		// still processing requests.
-		packet, err = serverPipe.readPacket()
+		packet, err = serverPipe.ReadPacket()
 		if err != nil {
 			kDone <- fmt.Errorf("read packet: %w", err)
 			return
@@ -421,7 +421,7 @@ func TestMuxUnknownChannelRequests(t *testing.T) {
 			return
 		}
 
-		err = serverPipe.writePacket(Marshal(globalRequestFailureMsg{
+		err = serverPipe.WritePacket(Marshal(globalRequestFailureMsg{
 			Data: []byte{},
 		}))
 		if err != nil {
@@ -458,7 +458,7 @@ func TestMuxClosedChannel(t *testing.T) {
 	kDone := make(chan error, 1)
 	go func() {
 		// Open the channel.
-		packet, err := serverPipe.readPacket()
+		packet, err := serverPipe.ReadPacket()
 		if err != nil {
 			kDone <- fmt.Errorf("read packet: %w", err)
 			return
@@ -475,7 +475,7 @@ func TestMuxClosedChannel(t *testing.T) {
 		}
 
 		// Send back the opened channel confirmation.
-		err = serverPipe.writePacket(Marshal(channelOpenConfirmMsg{
+		err = serverPipe.WritePacket(Marshal(channelOpenConfirmMsg{
 			PeersID:       openMsg.PeersID,
 			MyID:          0,
 			MyWindow:      0,
@@ -487,7 +487,7 @@ func TestMuxClosedChannel(t *testing.T) {
 		}
 
 		// Close the channel.
-		err = serverPipe.writePacket(Marshal(channelCloseMsg{
+		err = serverPipe.WritePacket(Marshal(channelCloseMsg{
 			PeersID: openMsg.PeersID,
 		}))
 		if err != nil {
@@ -496,7 +496,7 @@ func TestMuxClosedChannel(t *testing.T) {
 		}
 
 		// Send a keepalive message on the channel we just closed.
-		err = serverPipe.writePacket(Marshal(channelRequestMsg{
+		err = serverPipe.WritePacket(Marshal(channelRequestMsg{
 			PeersID:             openMsg.PeersID,
 			Request:             "keepalive@openssh.com",
 			WantReply:           true,
@@ -508,7 +508,7 @@ func TestMuxClosedChannel(t *testing.T) {
 		}
 
 		// Receive the channel closed response.
-		packet, err = serverPipe.readPacket()
+		packet, err = serverPipe.ReadPacket()
 		if err != nil {
 			kDone <- fmt.Errorf("read packet: %w", err)
 			return
@@ -519,7 +519,7 @@ func TestMuxClosedChannel(t *testing.T) {
 		}
 
 		// Receive the keepalive response failure.
-		packet, err = serverPipe.readPacket()
+		packet, err = serverPipe.ReadPacket()
 		if err != nil {
 			kDone <- fmt.Errorf("read packet: %w", err)
 			return
@@ -532,7 +532,7 @@ func TestMuxClosedChannel(t *testing.T) {
 
 		// Receive and respond to the keepalive to confirm the mux is
 		// still processing requests.
-		packet, err = serverPipe.readPacket()
+		packet, err = serverPipe.ReadPacket()
 		if err != nil {
 			kDone <- fmt.Errorf("read packet: %w", err)
 			return
@@ -542,7 +542,7 @@ func TestMuxClosedChannel(t *testing.T) {
 			return
 		}
 
-		err = serverPipe.writePacket(Marshal(globalRequestFailureMsg{
+		err = serverPipe.WritePacket(Marshal(globalRequestFailureMsg{
 			Data: []byte{},
 		}))
 		if err != nil {
@@ -727,7 +727,7 @@ func TestMuxInvalidRecord(t *testing.T) {
 	marshalUint32(packet[5:], 1)
 	packet[9] = 42
 
-	a.conn.writePacket(packet)
+	a.conn.WritePacket(packet)
 	go a.SendRequest("hello", false, nil)
 	// 'a' wrote an invalid packet, so 'b' has exited.
 	req, ok := <-b.incomingRequests
@@ -770,7 +770,7 @@ func TestMuxMaxPacketSize(t *testing.T) {
 	marshalUint32(packet[5:], uint32(len(large)))
 	packet[9] = 42
 
-	if err := a.mux.conn.writePacket(packet); err != nil {
+	if err := a.mux.conn.WritePacket(packet); err != nil {
 		t.Errorf("could not send packet")
 	}
 

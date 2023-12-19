@@ -1153,11 +1153,11 @@ type configurablePublicKeyCallback struct {
 	signatureFormat string
 }
 
-func (cb configurablePublicKeyCallback) method() string {
+func (cb configurablePublicKeyCallback) Method() string {
 	return "publickey"
 }
 
-func (cb configurablePublicKeyCallback) auth(session []byte, user string, c packetConn, rand io.Reader, extensions map[string][]byte) (authResult, []string, error) {
+func (cb configurablePublicKeyCallback) Auth(session []byte, user string, c PacketConn, rand io.Reader, extensions map[string][]byte) (authResult, []string, error) {
 	pub := cb.signer.PublicKey()
 
 	ok, err := validateKey(pub, cb.signatureAlgo, user, c)
@@ -1172,7 +1172,7 @@ func (cb configurablePublicKeyCallback) auth(session []byte, user string, c pack
 	data := buildDataSignedForAuth(session, userAuthRequestMsg{
 		User:    user,
 		Service: serviceSSH,
-		Method:  cb.method(),
+		Method:  cb.Method(),
 	}, cb.signatureAlgo, pubKey)
 	sign, err := cb.signer.SignWithAlgorithm(rand, data, underlyingAlgo(cb.signatureFormat))
 	if err != nil {
@@ -1185,14 +1185,14 @@ func (cb configurablePublicKeyCallback) auth(session []byte, user string, c pack
 	msg := publickeyAuthMsg{
 		User:     user,
 		Service:  serviceSSH,
-		Method:   cb.method(),
+		Method:   cb.Method(),
 		HasSig:   true,
 		Algoname: cb.signatureAlgo,
 		PubKey:   pubKey,
 		Sig:      sig,
 	}
 	p := Marshal(&msg)
-	if err := c.writePacket(p); err != nil {
+	if err := c.WritePacket(p); err != nil {
 		return authFailure, nil, err
 	}
 	var success authResult
@@ -1200,7 +1200,7 @@ func (cb configurablePublicKeyCallback) auth(session []byte, user string, c pack
 	if err != nil {
 		return authFailure, nil, err
 	}
-	if success == authSuccess || !contains(methods, cb.method()) {
+	if success == authSuccess || !contains(methods, cb.Method()) {
 		return success, methods, err
 	}
 
