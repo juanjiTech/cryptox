@@ -1157,15 +1157,15 @@ func (cb configurablePublicKeyCallback) Method() string {
 	return "publickey"
 }
 
-func (cb configurablePublicKeyCallback) Auth(session []byte, user string, c PacketConn, rand io.Reader, extensions map[string][]byte) (authResult, []string, error) {
+func (cb configurablePublicKeyCallback) Auth(session []byte, user string, c PacketConn, rand io.Reader, extensions map[string][]byte) (AuthResult, []string, error) {
 	pub := cb.signer.PublicKey()
 
 	ok, err := validateKey(pub, cb.signatureAlgo, user, c)
 	if err != nil {
-		return authFailure, nil, err
+		return AuthFailure, nil, err
 	}
 	if !ok {
-		return authFailure, nil, fmt.Errorf("invalid public key")
+		return AuthFailure, nil, fmt.Errorf("invalid public key")
 	}
 
 	pubKey := pub.Marshal()
@@ -1176,7 +1176,7 @@ func (cb configurablePublicKeyCallback) Auth(session []byte, user string, c Pack
 	}, cb.signatureAlgo, pubKey)
 	sign, err := cb.signer.SignWithAlgorithm(rand, data, underlyingAlgo(cb.signatureFormat))
 	if err != nil {
-		return authFailure, nil, err
+		return AuthFailure, nil, err
 	}
 
 	s := Marshal(sign)
@@ -1193,18 +1193,18 @@ func (cb configurablePublicKeyCallback) Auth(session []byte, user string, c Pack
 	}
 	p := Marshal(&msg)
 	if err := c.WritePacket(p); err != nil {
-		return authFailure, nil, err
+		return AuthFailure, nil, err
 	}
-	var success authResult
+	var success AuthResult
 	success, methods, err := handleAuthResponse(c)
 	if err != nil {
-		return authFailure, nil, err
+		return AuthFailure, nil, err
 	}
-	if success == authSuccess || !contains(methods, cb.Method()) {
+	if success == AuthSuccess || !contains(methods, cb.Method()) {
 		return success, methods, err
 	}
 
-	return authFailure, methods, nil
+	return AuthFailure, methods, nil
 }
 
 func TestPublicKeyAndAlgoCompatibility(t *testing.T) {
